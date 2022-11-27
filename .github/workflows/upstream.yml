@@ -1,0 +1,36 @@
+name: Upstream
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "30 5 * * *"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/github-script@v6
+        id: latest
+        with:
+          result-encoding: string
+          script: |
+            const options = { owner: "hadolint", repo: "hadolint" };
+            const resp = await github.rest.repos.getLatestRelease(options);
+
+            return resp.data.tag_name;
+
+      - name: Compare versions
+        run: |
+          local_version="v$(grep '^VERSION =' setup.py | cut -d '"' -f2)"
+          echo "Found local version $local_version"
+
+          latest_version="${{ steps.latest.outputs.result }}"
+          echo "Found latest version $latest_version"
+
+          if [[ "$local_version" != "$latest_version" ]]; then
+            exit 1
+          fi
