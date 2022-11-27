@@ -1,0 +1,7 @@
+---
+- id: hadolint
+  name: hadolint
+  description: Runs hadolint to lint Dockerfiles
+  entry: hadolint
+  language: python
+  types: [dockerfile]
